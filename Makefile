@@ -7,6 +7,7 @@
 #   make check       one heartbeat verification of the healthy circuit
 #   make demo        inject g00:replace:x, detect and localise it
 #   make evaluate    full evaluation matrix (slow: ~30-45 min)
+#   make summarize   render the saved evaluation as markdown tables
 #   make dashboard   launch the Streamlit UI
 #   make clean       remove caches and generated data
 
@@ -15,7 +16,7 @@ PIP     := .venv/bin/pip
 COLOUR  := \033[1;36m
 RESET   := \033[0m
 
-.PHONY: help install test calibrate check demo evaluate dashboard report reference clean
+.PHONY: help install test calibrate check demo evaluate summarize dashboard report reference clean
 
 help:
 	@grep -E '^#   make' Makefile | sed 's/^#   //'
@@ -45,6 +46,9 @@ evaluate:
 		--profiles ideal depolarizing_mild depolarizing_strong thermal \
 		--runs 200 --trials 3 --nominal-trials 100 --localization-trials 2 \
 		--shots 4096 --exact-sweep --output data/evaluation
+
+summarize:
+	$(PY) -m quantumpulse.cli summarize --input data/evaluation/evaluation.json
 
 dashboard:
 	PYTHONPATH=src .venv/bin/streamlit run src/quantumpulse/dashboard.py

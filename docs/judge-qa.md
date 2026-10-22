@@ -140,7 +140,7 @@ executed program.
 
 ### 11. What did you actually implement?
 
-Everything in `src/quantumpulse/` plus 70 tests. Explicitly **not**
+Everything in `src/quantumpulse/` plus 66 tests. Explicitly **not**
 implemented: a FastAPI service, IBM Quantum hardware execution, and multi-gate
 attack search. The dashboard, the CLI and the evaluation all call the same
 pipeline. The status table is also visible in the dashboard's *Method* tab.

@@ -9,7 +9,8 @@
 
 Supporting artefacts:
 
-* `../README.md` — overview and quickstart
+* `../README.md` — project overview for the hackathon (problem statement, solution, architecture)
+* `../README_QUANTUMPULSE.md` — technical README: quickstart, CLI, reference circuit, measured results
 * `../data/baseline.json` — the calibrated healthy null (ideal, 4096 shots, alpha 0.005)
 * `../data/evaluation/` — raw evaluation output (`evaluation.json`, `trials.csv`, `metrics.csv`)
 * `../data/ml_comparison.json` — Isolation Forest versus calibrated `D_TV` on identical runs
