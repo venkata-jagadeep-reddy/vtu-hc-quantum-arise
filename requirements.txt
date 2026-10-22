@@ -1,0 +1,16 @@
+# Core runtime
+qiskit>=1.0.0
+qiskit-aer>=0.14.0
+numpy>=1.24.0
+scipy>=1.10.0
+
+# Dashboard (optional: only needed for `streamlit run src/quantumpulse/dashboard.py`)
+streamlit>=1.30.0
+plotly>=5.18.0
+pandas>=2.0.0
+
+# Optional ML comparison (`quantumpulse ml-evaluate`)
+scikit-learn>=1.3.0
+
+# Development
+pytest>=8.0.0
