@@ -50,9 +50,9 @@ and gate-tampering localisation
 
 | # | Name | GitHub Username | Role |
 | :-- | :--- | :--- | :--- |
-| 1 | _Add your name_ | _your-github-username_ | _Team Lead_ |
-| 2 | _Add your name_ | _your-github-username_ | _Developer_ |
-| 3 | _Add your name_ | _your-github-username_ | _Developer_ |
+| 1 | D V Jagadeep Reddy | venkata-jagadeep-reddy | _Team Lead_ |
+| 2 | Matam Darshan | MatamDarshan | _Developer_ |
+| 3 | Yemula Venkatkarthikeyan | venkatkarthikeyan06 | _Developer_ |
 
 ---
 
