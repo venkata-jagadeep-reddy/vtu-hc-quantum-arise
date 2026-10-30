@@ -11,6 +11,7 @@ measures.
 
 from __future__ import annotations
 
+import io
 import sys
 from pathlib import Path
 
@@ -19,9 +20,11 @@ _SRC = str(Path(__file__).resolve().parent.parent)
 if _SRC not in sys.path:
     sys.path.insert(0, _SRC)
 
+import matplotlib.pyplot as plt
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
+from qiskit.visualization import circuit_drawer
 
 from quantumpulse.backends import AerBackend
 from quantumpulse.calibration import BaselineProfile, calibrate
@@ -38,15 +41,51 @@ from quantumpulse.tampering import (
 )
 from quantumpulse.verification import VerificationConfig, verify_heartbeats
 
-OK_COLOUR = "#2e7d32"
-ALERT_COLOUR = "#c62828"
-ACCENT = "#1f4e79"
-MUTED = "#8a8a8a"
+OK_COLOUR = "#22c55e"
+ALERT_COLOUR = "#ef4444"
+ACCENT = "#3b82f6"
+WARNING_COLOUR = "#f59e0b"
+MUTED = "#64748b"
 
 st.set_page_config(
     page_title="QuantumPulse | Circuit Integrity Monitor",
-    page_icon="~",
+    page_icon="⚛️",
     layout="wide",
+    initial_sidebar_state="expanded",
+)
+
+st.markdown(
+    """
+    <style>
+    .main .block-container {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+        max-width: 1400px;
+    }
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+    }
+    .stTabs [data-baseweb="tab"] {
+        height: 50px;
+        padding-left: 24px;
+        padding-right: 24px;
+        background-color: #f8f9fa;
+        border-radius: 8px 8px 0 0;
+    }
+    .stTabs [aria-selected="true"] {
+        background-color: #3b82f6;
+        color: white;
+    }
+    div[data-testid="metric-container"] {
+        background-color: #f8f9fa;
+        border: 1px solid #e0e0e0;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
 )
 
 
@@ -375,8 +414,107 @@ with tabs[0]:
 # reference tab
 # ----------------------------------------------------------------------
 with tabs[1]:
-    st.markdown("#### Reference program")
-    st.code(program.to_circuit(measure=False).draw(output="text").single_string(), language="text")
+    st.markdown("#### Reference circuit diagram")
+    
+    circ_full = program.to_circuit(measure=False)
+    gate_specs = program.gates
+    
+    col_a, col_b = st.columns([2, 1])
+    with col_b:
+        st.markdown("**Circuit animation**")
+        max_gates = len(gate_specs)
+        num_gates = st.slider(
+            "Show gates up to",
+            min_value=0,
+            max_value=max_gates,
+            value=max_gates,
+            step=1,
+            help="Slide to build the circuit step by step"
+        )
+        if num_gates == 0:
+            st.info("Slide to see the circuit being built gate by gate")
+        else:
+            st.caption(f"Showing {num_gates}/{max_gates} gates")
+    
+    with col_a:
+        try:
+            try:
+                if num_gates == 0:
+                    from qiskit import QuantumCircuit
+                    empty = QuantumCircuit(program.num_qubits)
+                    fig = circuit_drawer(empty, output="mpl", fold=20)
+                elif num_gates < max_gates:
+                    from qiskit import QuantumCircuit
+                    partial = QuantumCircuit(program.num_qubits)
+                    for i in range(num_gates):
+                        g = gate_specs[i]
+                        if g.op == "h":
+                            partial.h(g.qubits[0])
+                        elif g.op == "x":
+                            partial.x(g.qubits[0])
+                        elif g.op == "y":
+                            partial.y(g.qubits[0])
+                        elif g.op == "z":
+                            partial.z(g.qubits[0])
+                        elif g.op == "cx":
+                            partial.cx(g.qubits[0], g.qubits[1])
+                        elif g.op == "cz":
+                            partial.cz(g.qubits[0], g.qubits[1])
+                        elif g.op == "ry":
+                            partial.ry(g.params[0], g.qubits[0])
+                        elif g.op == "rz":
+                            partial.rz(g.params[0], g.qubits[0])
+                        elif g.op == "rx":
+                            partial.rx(g.params[0], g.qubits[0])
+                    fig = circuit_drawer(partial, output="mpl", fold=20)
+                else:
+                    fig = circuit_drawer(circ_full, output="mpl", fold=20)
+                
+                fig.set_size_inches(14, 5)
+                buf = io.BytesIO()
+                fig.savefig(buf, format="png", bbox_inches="tight", dpi=180, facecolor='white')
+                plt.close(fig)
+                buf.seek(0)
+                st.image(buf, use_container_width=True)
+            except Exception as e:
+                st.error(f"Error: {e}")
+            except Exception:
+                # Fallback to text if mpl fails
+                if num_gates == 0:
+                    from qiskit import QuantumCircuit
+                    empty = QuantumCircuit(program.num_qubits)
+                    st.code(empty.draw(output="text").single_string(), language="text")
+                elif num_gates < max_gates:
+                    from qiskit import QuantumCircuit
+                    partial = QuantumCircuit(program.num_qubits)
+                    for i in range(num_gates):
+                        g = gate_specs[i]
+                        if g.op == "h":
+                            partial.h(g.qubits[0])
+                        elif g.op == "x":
+                            partial.x(g.qubits[0])
+                        elif g.op == "cx":
+                            partial.cx(g.qubits[0], g.qubits[1])
+                        elif g.op == "cz":
+                            partial.cz(g.qubits[0], g.qubits[1])
+                        elif g.op == "ry":
+                            partial.ry(g.params[0], g.qubits[0])
+                        elif g.op == "rz":
+                            partial.rz(g.params[0], g.qubits[0])
+                        elif g.op == "rx":
+                            partial.rx(g.params[0], g.qubits[0])
+                    st.code(partial.draw(output="text").single_string(), language="text")
+                else:
+                    st.code(circ_full.draw(output="text").single_string(), language="text")
+        except Exception as exc:
+            st.caption(f"Circuit diagram rendering failed: {exc}")
+            if num_gates == max_gates:
+                st.code(circ_full.draw(output="text").single_string(), language="text")
+            else:
+                st.code("(build circuit up to selected gate count)", language="text")
+
+    with st.expander("View full circuit as text"):
+        st.code(circ_full.draw(output="text").single_string(), language="text")
 
     st.markdown("#### Gate schedule and heartbeat checkpoints")
     st.dataframe(pd.DataFrame(program_table(program)), hide_index=True, width="stretch")
