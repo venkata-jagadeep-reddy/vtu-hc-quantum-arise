@@ -3,6 +3,8 @@ qiskit>=1.0.0
 qiskit-aer>=0.14.0
 numpy>=1.24.0
 scipy>=1.10.0
+matplotlib>=3.6
+pylatexenc>=2.10
 
 # Dashboard (optional: only needed for `streamlit run src/quantumpulse/dashboard.py`)
 streamlit>=1.30.0
